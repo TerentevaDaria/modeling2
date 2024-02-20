@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<body>
+<div></div>
+<div>радиус R
+    <input id='R' type="number" min="0" max="100000" value="1" /> м
+</div>
+<div>количество витков n
+    <input id='n' type="number" min="1" max="100000" value="1" />
+</div>
+<div>сила тока I
+    <input id='I' type="number" min="0" max="100000" value="1" /> А
+</div>
+<button id='draw1' onclick='draw()'>Построить график</button>
+<div id="myPlot" style="height:100%;"></div>
+
+<script>
+    // вычисляет B(x) в конкретной точке х
+    function B(n, I, R, x)
+    {
+        let B1 = 1.2557e-6 * I * R * R * n / (2 * Math.sqrt((R ** 2 + x ** 2) ** 3)); // поле первой катушки
+        let B2 = 1.2557e-6 * I * R * R * n / (2 * Math.sqrt((R ** 2 + (R - x) ** 2) ** 3)); // поле второй катушки
+        let B = B1 + B2; // суммарный модуль индукции
+        return B;
+    }
+
+    // возвращает список координат для построения графика
+    function getCoords(h, cnt, n, I, R)
+    {
+        let coords = [[], []]; // [[x1, ... x_cnt], [B(x1), ... B(x_cnt)]]
+        for (let i = 0; i < cnt; i++)
+        {
+            let x = -cnt * h / 2 + h * i; // текущий х
+            coords[0].push(x);
+            coords[1].push(B(n, I, R, x));
+        }
+        return coords;
+    }
+
+    function draw() {
+        let cnt = 100000; //  number of iterations
+        let h = 0.0001; // step
+        const I = parseFloat(document.getElementById("I").value);
+        const n = parseInt(document.getElementById("n").value);
+        const R = parseFloat(document.getElementById("R").value);
+        let coords = getCoords(h, cnt, n, I, R);
+
+        // Define Data
+        const data = {
+            x: coords[0],
+            y: coords[1],
+            mode: "lines",
+            type: "scatter",
+            name: "B(x)"
+        };
+
+        // Define Layout
+        const layout = {
+            title: "Магнитное поле катушек Гельмгольца.  Центры колец находятся в точках х=0 и х=R",
+            xaxis: {
+                title: {
+                    text: "x, м"
+                },
+                exponentformat: 'e'
+            },
+            yaxis: {
+                title: {
+                    text: "B(x), Тл"
+                },
+                exponentformat: 'e'
+            }
+        };
+
+        // Display using Plotly
+        Plotly.newPlot("myPlot", [data], layout);
+    }
+
+    draw();
+    document.getElementById('draw1').onclick = draw; // draw by button click
+
+</script>
+
+</body>
+</html>
